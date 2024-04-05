@@ -1,0 +1,40 @@
+{
+  "slither": {
+    "timeout": 300,
+    "exclude_informational": false,
+    "exclude_dependencies": true,
+    "detectors": "all"
+  },
+  "mythril": {
+    "timeout": 600,
+    "max_depth": 128,
+    "execution_timeout": 300,
+    "solver_timeout": 10000,
+    "create_timeout": 10
+  },
+  "ai": {
+    "enabled": true,
+    "model": "gpt-4",
+    "temperature": 0.1,
+    "max_tokens": 2000,
+    "fallback_enabled": true
+  },
+  "detectors": {
+    "pattern_matching": true,
+    "advanced_detection": true,
+    "custom_rules": []
+  },
+  "output": {
+    "format": "both",
+    "verbose": true,
+    "include_recommendations": true,
+    "include_code_snippets": true
+  },
+  "severity_weights": {
+    "critical": 25,
+    "high": 10,
+    "medium": 5,
+    "low": 2,
+    "informational": 0.5
+  }
+}
