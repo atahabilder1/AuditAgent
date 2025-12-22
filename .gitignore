@@ -102,3 +102,27 @@ secrets/
 *.pem
 *.key
 credentials.json
+
+# LLM Models (Ollama stores models - can be 20GB+)
+# Models stored in /data/llm_models/ (configured via OLLAMA_MODELS env var)
+*.bin
+*.gguf
+*.safetensors
+models/
+llm_models/
+
+# Fetched Contracts (from blockchain)
+fetched_contracts/
+fetched_contract_*.sol
+
+# Backup files
+*.backup
+*.bak
+
+# Documentation generated files
+docs/.generated/
+
+# Sandbox/Foundry output
+out/
+broadcast/
+cache_forge/

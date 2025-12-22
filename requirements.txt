@@ -1,32 +1,140 @@
-# Core Dependencies
-slither-analyzer>=0.9.0
-mythril>=0.23.0
-solc-select>=1.0.0
+# ===================================================================
+# AuditAgent v2.0 - Requirements
+# ===================================================================
+# AI-Powered Smart Contract Security Analysis with Economic Vulnerability Detection
+# Last Updated: December 22, 2024
+# ===================================================================
 
-# AI/ML Libraries
-openai>=1.0.0
+# -------------------------------------------------------------------
+# Core Security Analysis Tools
+# -------------------------------------------------------------------
+slither-analyzer>=0.10.0        # Static analysis framework (Trail of Bits)
+solc-select>=1.0.0              # Solidity compiler version manager
 
-# Web3 and Ethereum
-web3>=6.0.0
-py-solc-x>=1.1.0
+# -------------------------------------------------------------------
+# Web3 and Blockchain Interaction
+# -------------------------------------------------------------------
+web3>=7.0.0                     # Ethereum/BSC/Polygon interaction
+py-solc-x>=2.0.0               # Solidity compiler Python wrapper
+eth-account>=0.10.0             # Ethereum account handling
+eth-utils>=2.3.0                # Ethereum utilities
 
-# Code Analysis
-pysha3>=1.0.2
+# -------------------------------------------------------------------
+# LLM Integration (Local AI)
+# -------------------------------------------------------------------
+ollama>=0.1.0                   # Local LLM inference (Qwen 32B)
+                                # NOTE: Ollama server must be installed separately:
+                                # curl -fsSL https://ollama.com/install.sh | sh
+                                # ollama pull qwen2.5-coder:32b-instruct
 
-# CLI and Formatting
-click>=8.0.0
-colorama>=0.4.6
-tabulate>=0.9.0
+# -------------------------------------------------------------------
+# CLI and User Interface
+# -------------------------------------------------------------------
+click>=8.0.0                    # Command-line interface framework
+colorama>=0.4.6                 # Cross-platform colored terminal text
+tabulate>=0.9.0                 # Pretty-print tabular data
+rich>=13.0.0                    # Rich text and beautiful formatting
 
-# Reporting
-jinja2>=3.1.0
-markdown>=3.4.0
+# -------------------------------------------------------------------
+# Reporting and Templating
+# -------------------------------------------------------------------
+jinja2>=3.1.0                   # Template engine for reports
+markdown>=3.4.0                 # Markdown processing
 
-# Testing
-pytest>=7.0.0
-pytest-cov>=4.0.0
+# -------------------------------------------------------------------
+# Testing Framework
+# -------------------------------------------------------------------
+pytest>=7.0.0                   # Testing framework
+pytest-cov>=4.0.0              # Coverage plugin for pytest
 
+# -------------------------------------------------------------------
 # Utilities
-python-dotenv>=1.0.0
-pyyaml>=6.0
-requests>=2.28.0
+# -------------------------------------------------------------------
+python-dotenv>=1.0.0           # Environment variable management
+pyyaml>=6.0                    # YAML configuration files
+requests>=2.28.0               # HTTP library for API calls
+
+# -------------------------------------------------------------------
+# AI/ML Libraries (Optional - for LLM fine-tuning)
+# -------------------------------------------------------------------
+# Uncomment if you want to fine-tune the LLM on custom security data
+# datasets>=2.14.0              # Hugging Face datasets
+# torch>=2.0.0                  # PyTorch (GPU required)
+# transformers>=4.30.0          # Hugging Face transformers
+# peft>=0.5.0                   # Parameter-Efficient Fine-Tuning (LoRA)
+# trl>=0.7.0                    # Transformer Reinforcement Learning
+# accelerate>=0.20.0            # Distributed training
+# bitsandbytes>=0.41.0          # 8-bit optimizers
+
+# -------------------------------------------------------------------
+# External Tools (Must Install Separately)
+# -------------------------------------------------------------------
+# These tools cannot be installed via pip and must be installed manually:
+#
+# 1. Foundry (Forge, Cast, Anvil) - Blockchain development toolkit
+#    Installation:
+#      curl -L https://foundry.paradigm.xyz | bash
+#      foundryup
+#
+# 2. Ollama - Local LLM inference server
+#    Installation:
+#      curl -fsSL https://ollama.com/install.sh | sh
+#      export OLLAMA_MODELS=/data/llm_models
+#      ollama serve &
+#      ollama pull qwen2.5-coder:32b-instruct
+#
+# 3. Solidity Compiler (solc)
+#    Installed via solc-select:
+#      solc-select install 0.8.20
+#      solc-select use 0.8.20
+#
+# 4. Node.js (for some blockchain tools)
+#    Installation:
+#      https://nodejs.org/ (LTS version recommended)
+
+# -------------------------------------------------------------------
+# Removed Dependencies (Why they were removed)
+# -------------------------------------------------------------------
+# pysha3 - Removed: web3.py handles hashing via eth-hash
+# mythril - Removed: Conflicts with web3>=6.x dependency versions
+#           If needed, install in separate environment
+# openai - Removed: Replaced with local Ollama for privacy & cost
+
+# -------------------------------------------------------------------
+# Python Version Requirement
+# -------------------------------------------------------------------
+# Requires: Python 3.10, 3.11, or 3.12
+# Check: python --version
+
+# -------------------------------------------------------------------
+# Installation Instructions
+# -------------------------------------------------------------------
+# 1. Create virtual environment:
+#    python -m venv venv
+#    source venv/bin/activate  # On Windows: venv\Scripts\activate
+#
+# 2. Install requirements:
+#    pip install -r requirements.txt
+#
+# 3. Install external tools (see above)
+#
+# 4. Verify installation:
+#    python -c "from src.audit_agent import AuditAgent; print('✓ Success')"
+
+# -------------------------------------------------------------------
+# GPU Requirements (for LLM)
+# -------------------------------------------------------------------
+# Qwen2.5-Coder-32B requires:
+# - NVIDIA GPU with 24GB+ VRAM (RTX 3090, 4090, A6000, A100)
+# - CUDA 12.0+
+# - cuDNN 8.9+
+#
+# Smaller models available:
+# - qwen2.5-coder:14b (requires 16GB VRAM)
+# - qwen2.5-coder:7b (requires 8GB VRAM)
+#
+# Without GPU: System works with Slither + pattern detection only
+
+# ===================================================================
+# End of Requirements
+# ===================================================================

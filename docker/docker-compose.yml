@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Main audit agent service
+  audit-agent:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: audit-agent:v2.0
+    container_name: audit-agent
+    volumes:
+      - ../:/app
+      - llm-models:/data/llm_models
+      - audit-reports:/data/audit_reports
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - ETHEREUM_RPC_URL=${ETHEREUM_RPC_URL:-https://eth.llamarpc.com}
+      - BSC_RPC_URL=${BSC_RPC_URL:-https://bsc-dataseed.binance.org}
+      - POLYGON_RPC_URL=${POLYGON_RPC_URL:-https://polygon-rpc.com}
+    depends_on:
+      - ollama
+    networks:
+      - audit-network
+    command: tail -f /dev/null  # Keep container running
+
+  # Ollama service for LLM inference
+  ollama:
+    image: ollama/ollama:latest
+    container_name: audit-ollama
+    volumes:
+      - llm-models:/root/.ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - audit-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  # Anvil service for blockchain forking
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:latest
+    container_name: audit-anvil
+    ports:
+      - "8545:8545"
+    networks:
+      - audit-network
+    command: anvil --host 0.0.0.0 --port 8545
+    restart: unless-stopped
+
+networks:
+  audit-network:
+    driver: bridge
+
+volumes:
+  llm-models:
+    driver: local
+  audit-reports:
+    driver: local

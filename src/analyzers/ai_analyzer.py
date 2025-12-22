@@ -1,36 +1,46 @@
 """
-AI-powered contract analysis using language models.
+AI-powered contract analysis using local language models (Ollama).
 
-Uses advanced AI models to identify complex vulnerabilities and provide
-contextual security recommendations.
+Uses local Qwen2.5-Coder-32B model to identify complex vulnerabilities
+and provide contextual security recommendations.
 """
 
 import os
+import logging
 from typing import Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class AIAnalyzer:
-    """AI-powered security analysis using language models."""
+    """AI-powered security analysis using local LLM (Ollama)."""
 
     def __init__(self, config: Optional[Dict] = None):
         """
-        Initialize AI analyzer.
+        Initialize AI analyzer with local LLM.
 
         Args:
             config: Configuration dictionary for AI model
         """
         self.config = config or {}
-        self.model = self.config.get('model', 'gpt-4')
+        self.model = self.config.get('model', 'qwen2.5-coder:32b-instruct')
         self.temperature = self.config.get('temperature', 0.1)
-        self.max_tokens = self.config.get('max_tokens', 2000)
+        self.max_tokens = self.config.get('max_tokens', 4000)
 
-        # Check for API key
-        self.api_key = os.getenv('OPENAI_API_KEY')
-        self.enabled = self.api_key is not None
+        # Initialize Ollama client
+        try:
+            from ..llm.ollama_client import OllamaClient
+            self.llm_client = OllamaClient(self.config)
+            self.enabled = True
+            logger.info(f"AI Analyzer initialized with {self.model}")
+        except Exception as e:
+            logger.warning(f"Failed to initialize Ollama client: {e}")
+            self.llm_client = None
+            self.enabled = False
 
     def analyze(self, contract_path: str, existing_results: Dict) -> Dict:
         """
-        Perform AI-powered analysis on a contract.
+        Perform AI-powered analysis on a contract using local LLM.
 
         Args:
             contract_path: Path to the Solidity contract
@@ -42,9 +52,10 @@ class AIAnalyzer:
         if not self.enabled:
             return {
                 'success': False,
-                'error': 'AI analysis disabled: OPENAI_API_KEY not set',
+                'error': 'AI analysis disabled: Ollama client not initialized',
                 'recommendations': [],
-                'risk_assessment': 'Unable to assess - AI disabled'
+                'risk_assessment': 'Unable to assess - Local LLM not available',
+                'vulnerabilities': []
             }
 
         try:
@@ -52,22 +63,44 @@ class AIAnalyzer:
             with open(contract_path, 'r') as f:
                 contract_code = f.read()
 
-            # Analyze with AI
-            analysis = self._analyze_with_ai(contract_code, existing_results)
+            # Get Slither findings for context
+            slither_findings = existing_results.get('analyzers', {}).get('slither', {}).get('detectors', [])
 
-            return {
-                'success': True,
-                'recommendations': analysis.get('recommendations', []),
-                'risk_assessment': analysis.get('risk_assessment', ''),
-                'code_quality': analysis.get('code_quality', {}),
-                'best_practices': analysis.get('best_practices', [])
-            }
+            # Analyze with local LLM
+            response = self.llm_client.analyze_vulnerability(
+                contract_code,
+                slither_findings,
+                context=f"Analyzing contract: {contract_path}"
+            )
+
+            if response.get('success'):
+                from ..llm.response_parser import ResponseParser
+                analysis = ResponseParser.parse_vulnerability_analysis(response['content'])
+
+                return {
+                    'success': True,
+                    'vulnerabilities': analysis.get('critical_vulnerabilities', []),
+                    'recommendations': analysis.get('recommendations', []),
+                    'risk_assessment': analysis.get('overall_assessment', ''),
+                    'risk_score': analysis.get('risk_score', 0),
+                    'llm_model': self.model,
+                    'inference_time': response.get('total_duration', 0) / 1e9  # Convert to seconds
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': response.get('error', 'LLM analysis failed'),
+                    'recommendations': [],
+                    'vulnerabilities': []
+                }
 
         except Exception as e:
+            logger.error(f"AI analysis failed: {e}")
             return {
                 'success': False,
                 'error': f'AI analysis failed: {str(e)}',
-                'recommendations': []
+                'recommendations': [],
+                'vulnerabilities': []
             }
 
     def _analyze_with_ai(self, contract_code: str, existing_results: Dict) -> Dict:
